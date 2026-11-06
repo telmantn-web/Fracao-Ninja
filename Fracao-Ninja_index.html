@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fração Ninja – 6º Ano | BNCC EF06MA07 · EF06MA10</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f172a;font-family:'Segoe UI',sans-serif}
+#root{min-height:100vh}
+input::placeholder{color:#64748b}
+button:active{transform:scale(0.97)}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.slide-up{animation:slideUp 0.35s ease forwards}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useCallback}=React;
+
+const VERSICULOS=[
+  {ref:"Eclesiastes 9.10",txt:"\"Tudo o que você tiver de fazer, faça-o com toda a sua força; porque no além, para onde você vai, não há obra, nem projeto, nem conhecimento, nem sabedoria.\""},
+  {ref:"Colossenses 3.23", txt:"\"E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens.\""},
+  {ref:"Provérbios 9.10",  txt:"\"O temor do SENHOR é o princípio da sabedoria, e o conhecimento do Santo é entendimento.\""},
+];
+
+const BNCC={
+  codigo:"EF06MA07 · EF06MA10",
+  habilidade:"(EF06MA07) Compreender, comparar e ordenar frações associadas às ideias de partes de inteiros e resultado de divisão, identificando frações equivalentes. (EF06MA10) Resolver e elaborar problemas que envolvam adição ou subtração com números racionais positivos na representação fracionária. Extensão: multiplicação e divisão de frações (EF07MA12, 7º ano).",
+  objeto:"Frações: significados, equivalência, comparação, adição e subtração",
+  campo:"Números",unidade:"Números",
+  ano:"6º Ano – Ensino Fundamental (Anos Finais)",
+};
+const CREDITS={
+  nome:"Telma Antonia Alves da Silva",
+  curso:"Licenciatura em Matemática – EaD",
+  disciplina:"Estágio Supervisionado II",
+  orientador:"Prof. Bruno Coelho",
+  regente:"Prof. Regente: Victor Aquino",
+  nivel:"Ensino Fundamental – Anos Finais | 6º Ano",
+};
+const LEVELS=[
+  {name:"Fácil",  maxDenom:6, timeLimit:45,points:10,label:"Denominadores até 6"},
+  {name:"Médio",  maxDenom:8, timeLimit:35,points:20,label:"Denominadores até 8"},
+  {name:"Difícil",maxDenom:12,timeLimit:25,points:30,label:"Denominadores até 12"},
+];
+const OPS=[
+  {symbol:"+",label:"Adição",       color:"#22c55e",emoji:"➕"},
+  {symbol:"-",label:"Subtração",    color:"#f59e0b",emoji:"➖"},
+  {symbol:"×",label:"Multiplicação",color:"#3b82f6",emoji:"✖️"},
+  {symbol:"÷",label:"Divisão",      color:"#ec4899",emoji:"➗"},
+];
+function fs(f){return f.den===1?`${f.num}`:`${f.num}/${f.den}`;}
+const PROBLEMS=[
+  {op:"+",emoji:"🍕",text:(a,b)=>`Ana comeu ${fs(a)} de uma pizza e João comeu ${fs(b)} da mesma pizza. Qual fração da pizza eles comeram juntos?`},
+  {op:"+",emoji:"🥤",text:(a,b)=>`Um copo tinha ${fs(a)} de litro de suco e outro tinha ${fs(b)} de litro. Quanto de suco há no total?`},
+  {op:"+",emoji:"📏",text:(a,b)=>`Pedro percorreu ${fs(a)} km de manhã e ${fs(b)} km à tarde. Que fração de km percorreu no total?`},
+  {op:"+",emoji:"🎂",text:(a,b)=>`Uma receita pede ${fs(a)} de xícara de açúcar e ${fs(b)} de xícara de farinha. Quantas xícaras de ingredientes ao todo?`},
+  {op:"+",emoji:"🐟",text:(a,b)=>`Em um aquário, ${fs(a)} dos peixes são azuis e ${fs(b)} são vermelhos. Que fração do total são azuis ou vermelhos?`},
+  {op:"-",emoji:"🍫",text:(a,b)=>`Mateus tinha ${fs(a)} de uma barra de chocolate e comeu ${fs(b)}. Que fração sobrou?`},
+  {op:"-",emoji:"🥛",text:(a,b)=>`Uma garrafa tinha ${fs(a)} de litro de leite. Carla usou ${fs(b)} de litro. Quanto sobrou?`},
+  {op:"-",emoji:"📚",text:(a,b)=>`Lucas leu ${fs(a)} do livro na segunda-feira. Já havia lido ${fs(b)} antes. Que fração ele leu a mais desta vez?`},
+  {op:"-",emoji:"🌿",text:(a,b)=>`Uma horta ocupa ${fs(a)} do terreno. Plantaram legumes em ${fs(b)} do terreno. Que fração ficou sem legumes?`},
+  {op:"-",emoji:"🎀",text:(a,b)=>`Uma fita media ${fs(a)} de metro. Foram usados ${fs(b)} de metro. Quanto de fita sobrou?`},
+  {op:"×",emoji:"🌽",text:(a,b)=>`Uma fazenda tem ${fs(a)} de hectare. ${fs(b)} dessa área é usada para plantar milho. Qual fração corresponde ao milho?`},
+  {op:"×",emoji:"🍎",text:(a,b)=>`Uma caixa tem ${fs(a)} kg de maçãs. Sofia usou ${fs(b)} dessas maçãs para fazer suco. Quantos kg ela usou?`},
+  {op:"×",emoji:"🖼️",text:(a,b)=>`Uma parede tem ${fs(a)} m² de área. ${fs(b)} dessa área será pintada. Qual área será pintada?`},
+  {op:"×",emoji:"🏃",text:(a,b)=>`Uma trilha tem ${fs(a)} km. Um grupo percorreu ${fs(b)} desse trajeto. Que distância percorreram?`},
+  {op:"÷",emoji:"🎂",text:(a,b)=>`${fs(a)} de um bolo foi dividido igualmente em ${fs(b)} partes iguais. Que fração corresponde a cada parte?`},
+  {op:"÷",emoji:"✂️",text:(a,b)=>`Uma fita de ${fs(a)} metro foi cortada em pedaços de ${fs(b)} metro. Quantos pedaços foram obtidos?`},
+  {op:"÷",emoji:"🧪",text:(a,b)=>`Um frasco tem ${fs(a)} de litro de solução. Cada experimento usa ${fs(b)} de litro. Para quantos experimentos dá?`},
+  {op:"÷",emoji:"🍊",text:(a,b)=>`${fs(a)} kg de laranja foi dividido em porções de ${fs(b)} kg. Quantas porções foram feitas?`},
+];
+
+// ── MATEMÁTICA ────────────────────────────────────────────────
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+function simplify(num,den){
+  if(den===0)return{num:0,den:1};
+  const g=gcd(Math.abs(num),Math.abs(den));
+  let n=num/g,d=den/g;
+  if(d<0){n=-n;d=-d;}
+  return{num:n,den:d};
+}
+function calcAns(a,b,op){
+  let num,den;
+  if(op==="+"){num=a.num*b.den+b.num*a.den;den=a.den*b.den;}
+  else if(op==="-"){num=a.num*b.den-b.num*a.den;den=a.den*b.den;}
+  else if(op==="×"){num=a.num*b.num;den=a.den*b.den;}
+  else{num=a.num*b.den;den=a.den*b.num;}
+  return simplify(num,den);
+}
+function ri(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function genFracs(level,op){
+  const maxD=LEVELS[level].maxDenom;
+  let a,b,t=0;
+  do{
+    a={num:ri(1,maxD-1),den:ri(2,maxD)};
+    b={num:ri(1,maxD-1),den:ri(2,maxD)};
+    t++;
+  }while(t<40&&((op==="÷"&&b.num===0)||(op==="-"&&a.num*b.den<=b.num*a.den)));
+  return{a,b};
+}
+function genChoices(correct){
+  const ws=[];let att=0;
+  while(ws.length<3&&att<60){
+    att++;
+    let wn=correct.num+ri(-3,3),wd=correct.den+ri(-2,2);
+    if(wd<=0)wd=correct.den+1;if(wn<=0)wn=1;
+    const s=simplify(wn,wd);
+    if((s.num!==correct.num||s.den!==correct.den)&&!ws.some(w=>w.num===s.num&&w.den===s.den))ws.push(s);
+  }
+  return[...ws,correct].sort(()=>Math.random()-0.5);
+}
+function genQ(level,op,type){
+  const{a,b}=genFracs(level,op);
+  const correct=calcAns(a,b,op);
+  const choices=genChoices(correct);
+  if(type==="problem"){
+    const pool=PROBLEMS.filter(p=>p.op===op);
+    const tmpl=pool[ri(0,pool.length-1)];
+    return{a,b,op,correct,choices,type:"problem",text:tmpl.text(a,b),emoji:tmpl.emoji};
+  }
+  return{a,b,op,correct,choices,type:"calc"};
+}
+
+// ── LOCAL STORAGE ─────────────────────────────────────────────
+const LS_KEY="fracaoNinja_historico";
+function loadHistorico(){
+  try{return JSON.parse(localStorage.getItem(LS_KEY)||"[]");}
+  catch{return[];}
+}
+function saveHistorico(h){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(h));}
+  catch{}
+}
+function clearHistorico(){
+  try{localStorage.removeItem(LS_KEY);}
+  catch{}
+}
+
+// ── IMPRESSÃO ─────────────────────────────────────────────────
+function doPrint({studentName,finalScore,correctCount,wrongCount,maxStreak,level,selOps,selTypes,history,TOTAL,date}){
+  const pct=Math.round((correctCount/TOTAL)*100);
+  const nota=(correctCount/TOTAL)*10;
+  const medal=nota>=9?"🏆 Excelente":nota>=7?"🥈 Muito Bom":nota>=5?"🥉 Bom":"💪 Em Desenvolvimento";
+  const opsUsed=selOps.map(s=>OPS.find(o=>o.symbol===s)?.label).join(", ");
+  const tipos=selTypes.map(t=>t==="calc"?"Cálculo Numérico":"Problemas Contextualizados").join(" + ");
+  const rows=history.map((h,i)=>{
+    const opInfo=OPS.find(o=>o.symbol===h.op);
+    const qText=h.type==="problem"?`<em style="font-size:11px">${h.text}</em>`:`<span style="font-family:monospace">${h.a.num}/${h.a.den} ${h.op} ${h.b.num}/${h.b.den}</span>`;
+    const ans=h.correct.den===1?h.correct.num:`${h.correct.num}/${h.correct.den}`;
+    return`<tr style="background:${i%2===0?"#f8fafc":"#fff"}">
+      <td style="padding:7px 10px;text-align:center;font-weight:700">${i+1}</td>
+      <td style="padding:7px 10px"><span style="background:${opInfo.color}22;color:${opInfo.color};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">${opInfo.emoji} ${opInfo.label}</span></td>
+      <td style="padding:7px 10px;font-size:12px">${qText}</td>
+      <td style="padding:7px 10px;text-align:center;font-family:monospace;font-weight:800">${ans}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:16px">${h.result==="correct"?"✅":"❌"}</td>
+    </tr>`;
+  }).join("");
+  const win=window.open("","_blank");
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Resultado – Fração Ninja</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#fff;color:#1e293b;padding:32px;max-width:750px;margin:0 auto}
+.header{text-align:center;border-bottom:3px solid #6366f1;padding-bottom:14px;margin-bottom:20px}
+h1{font-size:22px;font-weight:900;color:#6366f1}.sub{color:#64748b;font-size:12px}
+.section{margin-bottom:18px}
+h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin:0 0 8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:10px 14px}
+.box .lbl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px}
+.box .val{font-size:17px;font-weight:800;color:#1e293b;margin-top:2px}
+.big{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:16px}
+.big .pts{font-size:48px;font-weight:900;line-height:1}
+.big .medal{font-size:17px;font-weight:700;margin-bottom:3px}
+.big .sub2{font-size:11px;opacity:.8}.big .nota{font-size:13px;margin-top:5px;opacity:.9}
+.bncc{background:#f0f4ff;border:1px solid #c7d2fe;border-radius:11px;padding:13px}
+.code{display:inline-block;background:#6366f1;color:#fff;font-weight:800;font-size:12px;padding:3px 10px;border-radius:99px;margin-bottom:6px}
+.bt{font-size:11px;color:#475569;line-height:1.6;margin-top:3px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:#6366f1;color:#fff}
+th{padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+td{border-bottom:1px solid #e2e8f0;vertical-align:middle}
+.footer-p{border-top:2px solid #e2e8f0;padding-top:12px;margin-top:22px;text-align:center;font-size:11px;color:#94a3b8;line-height:1.8}
+.sname{font-size:19px;font-weight:800}
+.signature{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.sign-box{text-align:center;border-top:1px solid #94a3b8;padding-top:8px;font-size:11px;color:#475569}
+@media print{body{padding:14px}}
+</style></head><body>
+<div class="header"><div style="font-size:38px;margin-bottom:4px">🍕</div>
+<h1>Fração Ninja – 6º Ano</h1>
+<div class="sub">Relatório de Desempenho · ${date}</div></div>
+<div class="section"><h3>Identificação</h3>
+<div class="box"><div class="lbl">Nome</div><div class="sname">${studentName}</div></div></div>
+<div class="big"><div class="pts">${finalScore}</div>
+<div><div class="medal">${medal}</div><div class="sub2">pontos obtidos</div><div class="nota">Nota: ${nota.toFixed(1)} / 10,0</div></div></div>
+<div class="section"><h3>Desempenho</h3>
+<div class="grid3">
+<div class="box"><div class="lbl">Acertos</div><div class="val" style="color:#22c55e">${correctCount} ✅</div></div>
+<div class="box"><div class="lbl">Erros</div><div class="val" style="color:#ef4444">${wrongCount} ❌</div></div>
+<div class="box"><div class="lbl">Aproveitamento</div><div class="val" style="color:${pct>=70?"#22c55e":pct>=50?"#f59e0b":"#ef4444"}">${pct}%</div></div>
+</div>
+<div class="grid2" style="margin-top:8px">
+<div class="box"><div class="lbl">Nível</div><div class="val">${LEVELS[level].name}</div></div>
+<div class="box"><div class="lbl">Sequência máx.</div><div class="val">${maxStreak} 🔥</div></div>
+<div class="box"><div class="lbl">Operações</div><div class="val" style="font-size:11px">${opsUsed}</div></div>
+<div class="box"><div class="lbl">Tipos</div><div class="val" style="font-size:11px">${tipos}</div></div>
+</div></div>
+<div class="section"><h3>Histórico de Questões</h3>
+<table><thead><tr>
+<th style="width:34px">#</th><th style="width:125px">Operação</th>
+<th>Questão</th><th style="width:75px;text-align:center">Resposta</th>
+<th style="width:38px;text-align:center">Res.</th>
+</tr></thead><tbody>${rows}</tbody></table></div>
+<div class="section"><h3>Alinhamento BNCC</h3><div class="bncc">
+<span class="code">${BNCC.codigo}</span>
+<div class="bt"><strong>Unidade:</strong> ${BNCC.unidade} · <strong>Ano:</strong> ${BNCC.ano}</div>
+<div class="bt"><strong>Objeto:</strong> ${BNCC.objeto}</div>
+<div class="bt"><strong>Habilidade:</strong> ${BNCC.habilidade}</div>
+</div></div>
+<div class="signature">
+<div class="sign-box">Assinatura do(a) Aluno(a)<br><strong>${studentName}</strong></div>
+<div class="sign-box">Prof. Regente<br><strong>Victor Aquino</strong></div>
+</div>
+<div class="footer-p"><strong>${CREDITS.nome}</strong><br>
+${CREDITS.curso} · ${CREDITS.disciplina}<br>
+${CREDITS.orientador} · ${CREDITS.regente}<br>
+${CREDITS.nivel} · BNCC: ${BNCC.codigo}</div>
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`);
+  win.document.close();
+}
+
+// ── COMPONENTES ───────────────────────────────────────────────
+function Frac({num,den,big,color}){
+  const fs2=big?30:20,col=color||"#fff";
+  if(den===1)return <span style={{fontWeight:900,fontSize:fs2,fontFamily:"monospace",color:col}}>{num}</span>;
+  return(
+    <span style={{display:"inline-flex",flexDirection:"column",alignItems:"center",lineHeight:1,margin:"0 3px"}}>
+      <span style={{fontWeight:900,fontSize:fs2,fontFamily:"monospace",color:col,lineHeight:1}}>{num}</span>
+      <span style={{display:"block",width:"100%",height:2.5,background:col,margin:"3px 0"}}/>
+      <span style={{fontWeight:900,fontSize:fs2,fontFamily:"monospace",color:col,lineHeight:1}}>{den}</span>
+    </span>
+  );
+}
+function Footer(){
+  return(
+    <footer style={{width:"100%",maxWidth:520,marginTop:18,borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:12,paddingBottom:8,textAlign:"center"}}>
+      <div style={{display:"flex",flexDirection:"column",gap:3,alignItems:"center"}}>
+        <span style={{color:"#818cf8",fontSize:13,fontWeight:700}}>👩‍🎓 {CREDITS.nome}</span>
+        <span style={{color:"#64748b",fontSize:11}}>{CREDITS.curso} &nbsp;·&nbsp; {CREDITS.disciplina}</span>
+        <span style={{color:"#64748b",fontSize:11}}>{CREDITS.orientador} &nbsp;·&nbsp; {CREDITS.regente}</span>
+        <span style={{color:"#475569",fontSize:10}}>{CREDITS.nivel} &nbsp;·&nbsp; BNCC: {BNCC.codigo}</span>
+      </div>
+    </footer>
+  );
+}
+
+// ── TELA HISTÓRICO ────────────────────────────────────────────
+function TelaHistorico({onBack}){
+  const[historico,setHistorico]=useState(loadHistorico());
+  const[confirmando,setConfirmando]=useState(false);
+  function limpar(){setConfirmando(true);}
+  function confirmarLimpar(){clearHistorico();setHistorico([]);setConfirmando(false);}
+  function cancelarLimpar(){setConfirmando(false);}
+  const BG="linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)";
+  return(
+    <div style={{minHeight:"100vh",background:BG,fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",padding:16}}>
+      <div style={{width:"100%",maxWidth:480}} className="slide-up">
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
+          <button onClick={onBack} style={{background:"rgba(255,255,255,0.07)",border:"none",borderRadius:9,padding:"7px 13px",color:"#94a3b8",fontSize:13,cursor:"pointer",fontWeight:700}}>← Voltar</button>
+          <h2 style={{color:"#fff",fontSize:20,fontWeight:900,flex:1}}>📊 Histórico de Alunos</h2>
+          {historico.length>0&&<button onClick={limpar} style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:9,padding:"6px 12px",color:"#ef4444",fontSize:11,cursor:"pointer",fontWeight:700}}>🗑️ Limpar</button>}
+        </div>
+
+        {/* MODAL CONFIRMAÇÃO */}
+        {confirmando&&(
+          <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}}>
+            <div style={{background:"#1e1b4b",border:"1px solid rgba(239,68,68,0.4)",borderRadius:16,padding:24,maxWidth:300,width:"90%",textAlign:"center"}}>
+              <div style={{fontSize:40,marginBottom:10}}>🗑️</div>
+              <p style={{color:"#fff",fontSize:15,fontWeight:700,marginBottom:8}}>Apagar histórico?</p>
+              <p style={{color:"#94a3b8",fontSize:12,marginBottom:18}}>Esta ação não pode ser desfeita. Todos os registros serão apagados.</p>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={cancelarLimpar} style={{flex:1,padding:"10px",borderRadius:10,border:"1px solid rgba(255,255,255,0.15)",background:"transparent",color:"#94a3b8",fontSize:13,fontWeight:700,cursor:"pointer"}}>Cancelar</button>
+                <button onClick={confirmarLimpar} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"#ef4444",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>Apagar tudo</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {historico.length===0?(
+          <div style={{textAlign:"center",padding:"40px 20px",color:"#475569"}}>
+            <div style={{fontSize:48,marginBottom:12}}>📭</div>
+            <p style={{fontSize:14}}>Nenhuma sessão registrada ainda.</p>
+            <p style={{fontSize:12,marginTop:6}}>Jogue uma partida para ver o histórico aqui!</p>
+          </div>
+        ):(
+          <>
+            {/* Tabela de recordes */}
+            <div style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:14,marginBottom:12}}>
+              <p style={{color:"#818cf8",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>🏆 Ranking de Pontuação</p>
+              {[...historico].sort((a,b)=>b.finalScore-a.finalScore).slice(0,10).map((s,i)=>{
+                const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
+                const nota=((s.correctCount/s.TOTAL)*10).toFixed(1);
+                return(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<Math.min(historico.length,10)-1?"1px solid rgba(255,255,255,0.06)":"none"}}>
+                    <span style={{width:24,textAlign:"center",fontSize:14}}>{medal||`${i+1}º`}</span>
+                    <div style={{flex:1}}>
+                      <div style={{color:"#e2e8f0",fontSize:13,fontWeight:700}}>{s.studentName}</div>
+                      <div style={{color:"#64748b",fontSize:10}}>{s.date} · Nível {s.levelName}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{color:"#fbbf24",fontSize:14,fontWeight:800}}>{s.finalScore} pts</div>
+                      <div style={{color:"#94a3b8",fontSize:10}}>Nota {nota} · {s.correctCount}/{s.TOTAL} ✅</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Sessões detalhadas */}
+            <p style={{color:"#818cf8",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>📋 Sessões Recentes</p>
+            {[...historico].reverse().map((s,i)=>{
+              const nota=((s.correctCount/s.TOTAL)*10).toFixed(1);
+              const pct=Math.round((s.correctCount/s.TOTAL)*100);
+              return(
+                <div key={i} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:13,padding:13,marginBottom:9}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                    <div>
+                      <div style={{color:"#fff",fontSize:14,fontWeight:700}}>{s.studentName}</div>
+                      <div style={{color:"#64748b",fontSize:10}}>{s.date} · Nível {s.levelName}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{color:"#fbbf24",fontSize:16,fontWeight:900}}>{s.finalScore} pts</div>
+                      <div style={{color:"#94a3b8",fontSize:10}}>Nota {nota}/10</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:6,marginBottom:8}}>
+                    <span style={{background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.3)",borderRadius:99,padding:"2px 10px",color:"#22c55e",fontSize:11,fontWeight:700}}>{s.correctCount} acertos</span>
+                    <span style={{background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:99,padding:"2px 10px",color:"#ef4444",fontSize:11,fontWeight:700}}>{s.wrongCount} erros</span>
+                    <span style={{background:"rgba(129,140,248,0.12)",border:"1px solid rgba(129,140,248,0.25)",borderRadius:99,padding:"2px 10px",color:"#818cf8",fontSize:11,fontWeight:700}}>{pct}%</span>
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
+                    {s.history.map((h,j)=>(
+                      <div key={j} style={{width:26,height:26,borderRadius:6,background:h.result==="correct"?"rgba(34,197,94,0.2)":"rgba(239,68,68,0.2)",border:`1px solid ${h.result==="correct"?"#22c55e":"#ef4444"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>
+                        {h.result==="correct"?"✅":"❌"}
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={()=>doPrint({...s,selOps:s.selOps||["+","-","×","÷"],selTypes:s.selTypes||["calc","problem"]})}
+                    style={{width:"100%",padding:"8px",borderRadius:9,border:"1px solid rgba(34,197,94,0.3)",background:"rgba(34,197,94,0.08)",color:"#22c55e",fontSize:11,fontWeight:700,cursor:"pointer"}}>
+                    🖨️ Imprimir Resultado desta Sessão
+                  </button>
+                </div>
+              );
+            })}
+          </>
+        )}
+      </div>
+      <Footer/>
+    </div>
+  );
+}
+
+// ── APP PRINCIPAL ─────────────────────────────────────────────
+function App(){
+  const[screen,setScreen]=useState("menu");
+  const[level,setLevel]=useState(0);
+  const[selOps,setSelOps]=useState(["+","-","×","÷"]);
+  const[selTypes,setSelTypes]=useState(["calc","problem"]);
+  const[question,setQuestion]=useState(null);
+  const[score,setScore]=useState(0);
+  const[livesLeft,setLivesLeft]=useState(3);
+  const[round,setRound]=useState(0);
+  const[timeLeft,setTimeLeft]=useState(45);
+  const[feedback,setFeedback]=useState(null);
+  const[answered,setAnswered]=useState(false);
+  const[streak,setStreak]=useState(0);
+  const[maxStreak,setMaxStreak]=useState(0);
+  const[bestScore,setBestScore]=useState(0);
+  const TOTAL=10;
+  const[studentName,setStudentName]=useState("");
+  const[correctCount,setCorrectCount]=useState(0);
+  const[wrongCount,setWrongCount]=useState(0);
+  const[finalScore,setFinalScore]=useState(0);
+  const[showBncc,setShowBncc]=useState(false);
+  const[history,setHistory]=useState([]);
+  const[sessionDate,setSessionDate]=useState("");
+
+  const pickQ=useCallback(()=>{
+    const op=selOps[ri(0,selOps.length-1)];
+    const typ=selTypes[ri(0,selTypes.length-1)];
+    return genQ(level,op,typ);
+  },[level,selOps,selTypes]);
+
+  useEffect(()=>{
+    if(screen!=="game"||answered)return;
+    if(timeLeft<=0){handleAnswer(null);return;}
+    const t=setTimeout(()=>setTimeLeft(v=>v-1),1000);
+    return()=>clearTimeout(t);
+  },[timeLeft,screen,answered]);
+
+  function startGame(){
+    if(!studentName.trim()||selOps.length===0||selTypes.length===0)return;
+    setScore(0);setLivesLeft(3);setRound(0);setStreak(0);setMaxStreak(0);
+    setCorrectCount(0);setWrongCount(0);setHistory([]);
+    const now=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    setSessionDate(now);
+    const q=pickQ();setQuestion(q);setTimeLeft(LEVELS[level].timeLimit);
+    setFeedback(null);setAnswered(false);setScreen("game");
+  }
+
+  function handleAnswer(choice){
+    if(answered)return;
+    setAnswered(true);
+    const ans=question.correct;
+    const ok=choice&&choice.num===ans.num&&choice.den===ans.den;
+    let ns=score,nl=livesLeft,nst=streak,nms=maxStreak,nc=correctCount,nw=wrongCount;
+    if(ok){nst++;if(nst>nms)nms=nst;const bonus=nst>=3?Math.floor(LEVELS[level].points*0.5):0;ns+=LEVELS[level].points+bonus;nc++;setFeedback("correct");}
+    else{nst=0;nl--;nw++;setFeedback("wrong");}
+    setStreak(nst);setMaxStreak(nms);setScore(ns);setLivesLeft(nl);setCorrectCount(nc);setWrongCount(nw);
+    const newHist=[...history,{...question,result:ok?"correct":"wrong"}];
+    setHistory(newHist);
+    setTimeout(()=>{
+      const nr=round+1;
+      if(nr>=TOTAL||nl<=0){
+        setBestScore(b=>Math.max(b,ns));
+        setFinalScore(ns);
+        // Salvar no localStorage
+        const sessao={
+          studentName,finalScore:ns,correctCount:nc,wrongCount:nw,
+          maxStreak:nms,level,levelName:LEVELS[level].name,
+          selOps,selTypes,history:newHist,TOTAL,
+          date:sessionDate,
+        };
+        const hist=loadHistorico();
+        hist.push(sessao);
+        saveHistorico(hist);
+        setScreen("result");
+      }else{
+        setRound(nr);const q=pickQ();setQuestion(q);
+        setTimeLeft(LEVELS[level].timeLimit);setFeedback(null);setAnswered(false);
+      }
+    },1500);
+  }
+
+  function toggleOp(op){setSelOps(ops=>ops.includes(op)?(ops.length>1?ops.filter(o=>o!==op):ops):[...ops,op]);}
+  function toggleType(t){setSelTypes(ts=>ts.includes(t)?(ts.length>1?ts.filter(x=>x!==t):ts):[...ts,t]);}
+  function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>alert("✅ Link copiado! Compartilhe com seus alunos 😊"));}
+
+  if(screen==="historico") return <TelaHistorico onBack={()=>setScreen("menu")}/>;
+
+  const opInfo=question?OPS.find(o=>o.symbol===question.op):null;
+  const timerPct=question?(timeLeft/LEVELS[level].timeLimit)*100:100;
+  const timerCol=timerPct>50?"#22c55e":timerPct>25?"#f59e0b":"#ef4444";
+  const canStart=studentName.trim()&&selOps.length>0&&selTypes.length>0;
+  const BG="linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)";
+  const base={minHeight:"100vh",background:BG,fontFamily:"'Segoe UI',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",padding:16};
+
+  // ══ MENU ══════════════════════════════════════════════════
+  if(screen==="menu") return(
+    <div style={{...base,justifyContent:"center"}}>
+      <div style={{width:"100%",maxWidth:480,textAlign:"center"}} className="slide-up">
+
+        {/* VERSÍCULOS */}
+        <div style={{background:"linear-gradient(135deg,rgba(129,140,248,0.1),rgba(139,92,246,0.07))",border:"1px solid rgba(129,140,248,0.25)",borderRadius:16,padding:16,marginBottom:16,textAlign:"left"}}>
+          <p style={{color:"#a5b4fc",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:12,textAlign:"center"}}>✝️ Deus é tudo que nos temos</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {VERSICULOS.map((v,i)=>(
+              <div key={i} style={{borderLeft:"2px solid rgba(129,140,248,0.5)",paddingLeft:12}}>
+                <p style={{color:"#c7d2fe",fontSize:12,lineHeight:1.7,margin:"0 0 4px",fontStyle:"italic"}}>{v.txt}</p>
+                <p style={{color:"#818cf8",fontSize:11,fontWeight:700,margin:0}}>— {v.ref}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* TÍTULO */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:48}}>🍕</div>
+          <h1 style={{fontSize:28,fontWeight:900,color:"#fff",margin:"4px 0 2px",letterSpacing:-1}}>Fração <span style={{color:"#818cf8"}}>Ninja</span></h1>
+          <p style={{color:"#94a3b8",fontSize:12,margin:0}}>6º Ano · Frações, Equivalência e Problemas</p>
+          {bestScore>0&&<p style={{color:"#fbbf24",fontSize:11,marginTop:3}}>🏆 Recorde: {bestScore} pts</p>}
+        </div>
+
+        {/* BOTÕES TOPO */}
+        <div style={{display:"flex",gap:7,marginBottom:12}}>
+          <button onClick={copyLink} style={{flex:1,padding:"10px",borderRadius:11,border:"none",background:"linear-gradient(135deg,#4f46e5,#7c3aed)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+            🔗 Copiar Link
+          </button>
+          <button onClick={()=>setScreen("historico")} style={{flex:1,padding:"10px",borderRadius:11,border:"1px solid rgba(129,140,248,0.35)",background:"rgba(129,140,248,0.1)",color:"#818cf8",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+            📊 Histórico ({loadHistorico().length})
+          </button>
+        </div>
+
+        {/* DESCRIÇÃO */}
+        <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:14,padding:14,marginBottom:12,textAlign:"left"}}>
+          <p style={{color:"#818cf8",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>📋 Sobre o Aplicativo</p>
+          <p style={{color:"#cbd5e1",fontSize:12,lineHeight:1.7,margin:"0 0 10px"}}>O <strong style={{color:"#fff"}}>Fração Ninja</strong> é um jogo educativo para o <strong style={{color:"#a5b4fc"}}>6º Ano do Ensino Fundamental</strong>, com as <strong style={{color:"#a5b4fc"}}>quatro operações com frações</strong> e problemas do cotidiano.</p>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:10,marginBottom:10}}>
+            <p style={{color:"#94a3b8",fontSize:11,fontWeight:700,marginBottom:5}}>🎯 Objetivo</p>
+            <p style={{color:"#94a3b8",fontSize:11,lineHeight:1.6,margin:0}}>Praticar frações com cálculo direto e situações-problema reais, alinhados à <strong style={{color:"#c7d2fe"}}>BNCC EF06MA07 e EF06MA10</strong>.</p>
+          </div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:10,marginBottom:10}}>
+            <p style={{color:"#94a3b8",fontSize:11,fontWeight:700,marginBottom:5}}>🕹️ Como Jogar</p>
+            {["1️⃣ Digite seu nome, escolha o nível e as operações","2️⃣ Responda antes do tempo acabar","3️⃣ Sequências de acertos geram bônus 🔥","4️⃣ O resultado é salvo automaticamente no histórico"].map((t,i)=>(
+              <p key={i} style={{color:"#94a3b8",fontSize:11,lineHeight:1.6,margin:"0 0 2px"}}>{t}</p>
+            ))}
+          </div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:10}}>
+            <div style={{display:"flex",gap:7}}>
+              <div style={{flex:1,background:"rgba(99,102,241,0.1)",border:"1px solid rgba(99,102,241,0.2)",borderRadius:9,padding:"8px 10px"}}>
+                <div style={{fontSize:16,marginBottom:2}}>🔢</div>
+                <div style={{color:"#a5b4fc",fontSize:11,fontWeight:700}}>Cálculo Direto</div>
+              </div>
+              <div style={{flex:1,background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.2)",borderRadius:9,padding:"8px 10px"}}>
+                <div style={{fontSize:16,marginBottom:2}}>📖</div>
+                <div style={{color:"#c4b5fd",fontSize:11,fontWeight:700}}>Problemas</div>
+              </div>
+              <div style={{flex:1,background:"rgba(34,197,94,0.08)",border:"1px solid rgba(34,197,94,0.2)",borderRadius:9,padding:"8px 10px"}}>
+                <div style={{fontSize:16,marginBottom:2}}>💾</div>
+                <div style={{color:"#22c55e",fontSize:11,fontWeight:700}}>Salvo auto</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BNCC */}
+        <button onClick={()=>setShowBncc(v=>!v)} style={{background:"rgba(99,102,241,0.15)",border:"1px solid rgba(99,102,241,0.35)",borderRadius:99,padding:"4px 14px",color:"#818cf8",fontSize:11,fontWeight:700,cursor:"pointer",marginBottom:10}}>
+          📚 BNCC {BNCC.codigo} {showBncc?"▲":"▼"}
+        </button>
+        {showBncc&&(
+          <div style={{background:"rgba(99,102,241,0.08)",border:"1px solid rgba(99,102,241,0.2)",borderRadius:12,padding:12,marginBottom:11,textAlign:"left"}}>
+            <p style={{color:"#818cf8",fontSize:10,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>{BNCC.campo} · {BNCC.ano}</p>
+            <p style={{color:"#94a3b8",fontSize:11,lineHeight:1.6,margin:"0 0 4px"}}><strong style={{color:"#c7d2fe"}}>Habilidade:</strong> {BNCC.habilidade}</p>
+            <p style={{color:"#94a3b8",fontSize:11,margin:0}}><strong style={{color:"#c7d2fe"}}>Objeto:</strong> {BNCC.objeto}</p>
+          </div>
+        )}
+
+        {/* NOME */}
+        <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:12,marginBottom:8}}>
+          <p style={{color:"#94a3b8",fontSize:10,marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>Nome do Aluno(a)</p>
+          <input type="text" placeholder="Digite seu nome completo..." value={studentName} onChange={e=>setStudentName(e.target.value)}
+            style={{width:"100%",padding:"10px 12px",borderRadius:8,border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#fff",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+
+        {/* NÍVEL */}
+        <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:12,marginBottom:8}}>
+          <p style={{color:"#94a3b8",fontSize:10,marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>Nível</p>
+          <div style={{display:"flex",gap:6}}>
+            {LEVELS.map((l,i)=>(
+              <button key={i} onClick={()=>setLevel(i)} style={{flex:1,padding:"8px 3px",borderRadius:8,border:level===i?"2px solid #818cf8":"2px solid transparent",background:level===i?"rgba(129,140,248,0.2)":"rgba(255,255,255,0.05)",color:level===i?"#818cf8":"#94a3b8",cursor:"pointer",fontWeight:700,fontSize:11}}>
+                {l.name}<div style={{fontSize:8,marginTop:1,opacity:.7}}>{l.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* OPERAÇÕES */}
+        <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:12,marginBottom:8}}>
+          <p style={{color:"#94a3b8",fontSize:10,marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>Operações com Frações</p>
+          <div style={{display:"flex",gap:6}}>
+            {OPS.map(op=>(
+              <button key={op.symbol} onClick={()=>toggleOp(op.symbol)} style={{flex:1,padding:"9px 2px",borderRadius:8,border:selOps.includes(op.symbol)?`2px solid ${op.color}`:"2px solid transparent",background:selOps.includes(op.symbol)?`${op.color}22`:"rgba(255,255,255,0.05)",color:selOps.includes(op.symbol)?op.color:"#64748b",cursor:"pointer",fontWeight:700,fontSize:16}}>
+                {op.emoji}<div style={{fontSize:8,marginTop:1}}>{op.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* TIPO */}
+        <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:12,marginBottom:14}}>
+          <p style={{color:"#94a3b8",fontSize:10,marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>Tipo de Questão</p>
+          <div style={{display:"flex",gap:6}}>
+            {[{id:"calc",label:"🔢 Cálculo",desc:"Operação direta"},{id:"problem",label:"📖 Problemas",desc:"Contexto real"}].map(t=>(
+              <button key={t.id} onClick={()=>toggleType(t.id)} style={{flex:1,padding:"9px 6px",borderRadius:8,border:selTypes.includes(t.id)?"2px solid #818cf8":"2px solid transparent",background:selTypes.includes(t.id)?"rgba(129,140,248,0.2)":"rgba(255,255,255,0.05)",color:selTypes.includes(t.id)?"#818cf8":"#64748b",cursor:"pointer",fontWeight:700,fontSize:12}}>
+                {t.label}<div style={{fontSize:8,marginTop:1,opacity:.7}}>{t.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button onClick={startGame} disabled={!canStart} style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:canStart?"linear-gradient(135deg,#6366f1,#8b5cf6)":"rgba(99,102,241,0.3)",color:"#fff",fontSize:15,fontWeight:900,cursor:canStart?"pointer":"not-allowed",boxShadow:canStart?"0 8px 26px rgba(99,102,241,0.4)":"none"}}>
+          ⚔️ Começar Jogo
+        </button>
+        {!studentName.trim()&&<p style={{color:"#ef4444",fontSize:10,marginTop:5}}>⚠️ Digite seu nome para começar</p>}
+        <p style={{color:"#475569",fontSize:10,marginTop:5}}>{TOTAL} rodadas · {LEVELS[level].timeLimit}s por questão · 💾 salvo automaticamente</p>
+      </div>
+      <Footer/>
+    </div>
+  );
+
+  // ══ RESULTADO ═════════════════════════════════════════════
+  if(screen==="result"){
+    const pct=Math.round((correctCount/TOTAL)*100);
+    const nota=(correctCount/TOTAL)*10;
+    const medal=nota>=9?"🏆 Excelente!":nota>=7?"🥈 Muito Bom!":nota>=5?"🥉 Bom trabalho!":"💪 Continue tentando!";
+    const icon=nota>=9?"🏆":nota>=7?"🥈":nota>=5?"🥉":"💪";
+    return(
+      <div style={{...base,justifyContent:"center"}}>
+        <div style={{width:"100%",maxWidth:460}} className="slide-up">
+          <div style={{textAlign:"center",marginBottom:12}}>
+            <div style={{fontSize:46,marginBottom:4}}>{icon}</div>
+            <h2 style={{color:"#fff",fontSize:21,fontWeight:900,margin:"0 0 3px"}}>{medal}</h2>
+            <p style={{color:"#818cf8",fontSize:14,fontWeight:700}}>👤 {studentName}</p>
+            <p style={{color:"#64748b",fontSize:11}}>Nível {LEVELS[level].name} · {sessionDate}</p>
+            <p style={{color:"#22c55e",fontSize:11,marginTop:3}}>💾 Sessão salva no histórico!</p>
+          </div>
+
+          <div style={{background:"linear-gradient(135deg,#6366f1,#8b5cf6)",borderRadius:16,padding:"14px 20px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:9,textTransform:"uppercase",letterSpacing:1}}>Nota</div>
+              <div style={{color:"#fff",fontSize:36,fontWeight:900,lineHeight:1}}>{nota.toFixed(1)}</div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:9}}>/10,0</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:9,textTransform:"uppercase",letterSpacing:1}}>Pontuação</div>
+              <div style={{color:"#fbbf24",fontSize:26,fontWeight:900}}>{finalScore} pts</div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:9}}>Aproveitamento: {pct}%</div>
+            </div>
+          </div>
+
+          <div style={{background:"rgba(255,255,255,0.06)",borderRadius:16,padding:14,marginBottom:12,display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+            {[
+              {label:"Acertos",value:correctCount+" ✅",color:"#22c55e"},
+              {label:"Erros",value:wrongCount+" ❌",color:"#ef4444"},
+              {label:"Sequência máx.",value:maxStreak+" 🔥",color:"#f59e0b"},
+              {label:"Recorde",value:bestScore+" pts",color:"#818cf8"},
+            ].map((s,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.04)",borderRadius:9,padding:11}}>
+                <div style={{color:"#64748b",fontSize:9,textTransform:"uppercase",letterSpacing:1}}>{s.label}</div>
+                <div style={{color:s.color,fontSize:17,fontWeight:800,marginTop:2}}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Histórico visual */}
+          <div style={{background:"rgba(255,255,255,0.05)",borderRadius:14,padding:12,marginBottom:12}}>
+            <p style={{color:"#94a3b8",fontSize:9,textTransform:"uppercase",letterSpacing:1.5,marginBottom:8}}>Questões desta sessão</p>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+              {history.map((h,i)=>(
+                <div key={i} title={h.type==="problem"?h.text:`${h.a.num}/${h.a.den} ${h.op} ${h.b.num}/${h.b.den}`}
+                  style={{width:30,height:30,borderRadius:7,background:h.result==="correct"?"rgba(34,197,94,0.2)":"rgba(239,68,68,0.2)",border:`1px solid ${h.result==="correct"?"#22c55e":"#ef4444"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>
+                  {h.result==="correct"?"✅":"❌"}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{background:"rgba(99,102,241,0.1)",border:"1px solid rgba(99,102,241,0.25)",borderRadius:12,padding:11,marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+              <span style={{background:"#6366f1",color:"#fff",fontWeight:800,fontSize:10,padding:"2px 8px",borderRadius:99}}>{BNCC.codigo}</span>
+              <span style={{color:"#818cf8",fontSize:10,fontWeight:600}}>{BNCC.campo} · {BNCC.ano}</span>
+            </div>
+            <p style={{color:"#94a3b8",fontSize:10,lineHeight:1.5,margin:0}}>{BNCC.habilidade}</p>
+          </div>
+
+          <div style={{display:"flex",gap:7,marginBottom:7}}>
+            <button onClick={startGame} style={{flex:1,padding:11,borderRadius:11,border:"none",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",color:"#fff",fontSize:12,fontWeight:800,cursor:"pointer"}}>🔄 Jogar Novamente</button>
+            <button onClick={()=>setScreen("menu")} style={{flex:1,padding:11,borderRadius:11,border:"2px solid rgba(255,255,255,0.1)",background:"transparent",color:"#94a3b8",fontSize:12,fontWeight:700,cursor:"pointer"}}>🏠 Menu</button>
+          </div>
+          <div style={{display:"flex",gap:7}}>
+            <button onClick={()=>doPrint({studentName,finalScore,correctCount,wrongCount,maxStreak,level,selOps,selTypes,history,TOTAL,date:sessionDate})}
+              style={{flex:2,padding:11,borderRadius:11,border:"1px solid rgba(34,197,94,0.35)",background:"rgba(34,197,94,0.12)",color:"#22c55e",fontSize:12,fontWeight:800,cursor:"pointer"}}>
+              🖨️ Imprimir Resultado
+            </button>
+            <button onClick={()=>setScreen("historico")} style={{flex:1,padding:11,borderRadius:11,border:"1px solid rgba(129,140,248,0.35)",background:"rgba(129,140,248,0.1)",color:"#818cf8",fontSize:12,fontWeight:800,cursor:"pointer"}}>
+              📊 Histórico
+            </button>
+          </div>
+        </div>
+        <Footer/>
+      </div>
+    );
+  }
+
+  // ══ JOGO ══════════════════════════════════════════════════
+  return(
+    <div style={{...base,paddingTop:10}}>
+      <div style={{width:"100%",maxWidth:480,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>
+        <div style={{display:"flex",gap:2}}>
+          {[...Array(3)].map((_,i)=><span key={i} style={{fontSize:18,opacity:i<livesLeft?1:0.2}}>❤️</span>)}
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{color:"#818cf8",fontSize:9,fontWeight:600}}>👤 {studentName}</div>
+          <div style={{color:"#fbbf24",fontSize:17,fontWeight:900,lineHeight:1}}>{score} pts</div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{color:"#94a3b8",fontSize:11,fontWeight:700}}>{round+1}/{TOTAL}</div>
+          <div style={{color:"#475569",fontSize:9}}>rodada</div>
+        </div>
+      </div>
+      <div style={{width:"100%",maxWidth:480,height:5,background:"rgba(255,255,255,0.1)",borderRadius:99,marginBottom:8,overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${timerPct}%`,background:timerCol,borderRadius:99,transition:"width 1s linear,background 0.5s"}}/>
+      </div>
+      {streak>=2&&(
+        <div style={{background:"rgba(251,191,36,0.15)",border:"1px solid rgba(251,191,36,0.3)",borderRadius:99,padding:"3px 12px",color:"#fbbf24",fontSize:11,fontWeight:700,marginBottom:7}}>
+          🔥 Sequência: {streak}x {streak>=3?`· +${Math.floor(LEVELS[level].points*0.5)} bônus!`:""}
+        </div>
+      )}
+      {question&&(
+        <div style={{width:"100%",maxWidth:480,flex:1,display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:4,background:`${opInfo.color}22`,border:`1px solid ${opInfo.color}44`,borderRadius:99,padding:"2px 10px"}}>
+              <span style={{fontSize:10}}>{opInfo.emoji}</span>
+              <span style={{color:opInfo.color,fontSize:10,fontWeight:700}}>{opInfo.label}</span>
+            </div>
+            {question.type==="problem"&&(
+              <div style={{display:"inline-flex",alignItems:"center",gap:3,background:"rgba(139,92,246,0.15)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:99,padding:"2px 8px"}}>
+                <span style={{fontSize:9}}>📖</span>
+                <span style={{color:"#a78bfa",fontSize:9,fontWeight:700}}>Problema</span>
+              </div>
+            )}
+            <div style={{marginLeft:"auto",color:timerCol,fontSize:13,fontWeight:800}}>⏱ {timeLeft}s</div>
+          </div>
+          <div style={{background:"rgba(255,255,255,0.06)",borderRadius:18,padding:"16px 15px",marginBottom:10,textAlign:"center",border:feedback==="correct"?"2px solid #22c55e":feedback==="wrong"?"2px solid #ef4444":"2px solid transparent",transition:"border-color 0.3s",flex:1,display:"flex",flexDirection:"column",justifyContent:"center"}}>
+            {question.type==="problem"?(
+              <div>
+                <div style={{fontSize:32,marginBottom:8}}>{question.emoji}</div>
+                <p style={{color:"#e2e8f0",fontSize:13,lineHeight:1.75,margin:"0 0 10px",textAlign:"left"}}>{question.text}</p>
+                <p style={{color:"#64748b",fontSize:11}}>Qual é o resultado?</p>
+              </div>
+            ):(
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:9,color:"#fff",flexWrap:"wrap"}}>
+                <Frac num={question.a.num} den={question.a.den} big/>
+                <span style={{fontSize:26,fontWeight:900,color:opInfo.color}}>{question.op}</span>
+                <Frac num={question.b.num} den={question.b.den} big/>
+                <span style={{fontSize:22,color:"#64748b"}}>=</span>
+                <span style={{fontSize:22,color:"#64748b"}}>?</span>
+              </div>
+            )}
+            {feedback&&(
+              <div style={{marginTop:9,fontSize:12,fontWeight:700,color:feedback==="correct"?"#22c55e":"#ef4444",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                {feedback==="correct"?"✅ Correto! Muito bem!":<><span>❌ Resposta:</span><Frac num={question.correct.num} den={question.correct.den} color="#ef4444"/></>}
+              </div>
+            )}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:5}}>
+            {question.choices.map((c,i)=>{
+              const isC=c.num===question.correct.num&&c.den===question.correct.den;
+              let bg="rgba(255,255,255,0.06)",border="2px solid rgba(255,255,255,0.1)";
+              if(answered&&isC){bg="rgba(34,197,94,0.2)";border="2px solid #22c55e";}
+              if(answered&&!isC){bg="rgba(239,68,68,0.08)";border="2px solid rgba(239,68,68,0.2)";}
+              return(
+                <button key={i} onClick={()=>handleAnswer(c)} disabled={answered}
+                  style={{padding:"15px 8px",borderRadius:12,border,background:bg,color:answered&&isC?"#22c55e":"#fff",fontSize:15,fontWeight:800,cursor:answered?"default":"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <Frac num={c.num} den={c.den} color={answered&&isC?"#22c55e":undefined}/>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <Footer/>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
